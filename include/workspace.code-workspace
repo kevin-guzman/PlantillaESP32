@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../../../../Escritorio/PruebaESP32"
+		},
+		{
+			"name": "ESP32test",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}
