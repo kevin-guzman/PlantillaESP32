@@ -6,19 +6,6 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 String clientID = "";
 
-void setupMqtt(const char* MQTT_SERVER, int MQTT_PORT, String clientId){
-  clientID = clientId;
-  client.setServer(MQTT_SERVER, MQTT_PORT);
-  client.setCallback(onMQTTClient);
-}
-
-void mqttLoop(){
-  if (!client.connected()) {
-    reconnect();
-  }
-  client.loop();
-}
-
 String parsePayload(byte* payload, unsigned int length){
   String value;
   for (int i = 0; i < length; i++) {
@@ -30,6 +17,34 @@ String parsePayload(byte* payload, unsigned int length){
 void onMQTTClient(char* _topic, byte* _payload, unsigned int length){
   String payload = parsePayload(_payload, length);
   String topic = String(_topic);
+}
+
+void setupMqtt(const char* MQTT_SERVER, int MQTT_PORT, String clientId){
+  clientID = clientId;
+  client.setServer(MQTT_SERVER, MQTT_PORT);
+  client.setCallback(onMQTTClient);
+}
+
+void reconnect() {
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    if (client.connect(clientID.c_str())) {
+      Serial.println("connected");
+      client.subscribe("node/message");
+    } else {
+      Serial.print("failed, reconnection");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      delay(5000);
+    }
+  }
+}
+
+void mqttLoop(){
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
 }
 
 void sendMessage(const char* topic, String message){
@@ -58,17 +73,4 @@ void sendMessage(const char* topic, String message){
   }
 }
 
-void reconnect() {
-  while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    if (client.connect(clientID.c_str())) {
-      Serial.println("connected");
-      client.subscribe("node/message");
-    } else {
-      Serial.print("failed, reconnection");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      delay(5000);
-    }
-  }
-}
+

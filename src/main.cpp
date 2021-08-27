@@ -1,7 +1,12 @@
-#include <Arduino_JSON.h>
 #include <WiFi.h>
-#include "JSONobject.h"
-#include "mqtt.h"
+#include "infraestructure/JSONobject.h"
+#include "infraestructure/mqtt.h"
+#include "util/MetricTypes.h"
+#include "util/UnityTypes.h"
+
+MetricTypes MT;
+UnityTypes UT;
+
 
 // Editables
 int MQTT_PORT = 1883;
@@ -38,10 +43,9 @@ void setup(){
   if(WiFi.status() == WL_CONNECTED){
     setupMqtt(MQTT_SERVER, MQTT_PORT, clientId);
   }
-
-  setMetric("temperature", 1, "C");
-  setMetric("humidity", 30, "S");
-  setMetric("wind", 90, "m/s");
+  setMetric(MT.temperatura, 1, UT.tepertatura.centigrados);
+  setMetric(MT.humedad, 30, "9" + UT.humedad.porciento);
+  setMetric(MT.velocidad, 90, UT.velocidad.ms);
 }
 
 void loop(){
