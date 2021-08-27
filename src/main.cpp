@@ -1,27 +1,26 @@
 #include <WiFi.h>
 #include <JSONMessage.h>
-#include "infraestructure/mqtt.h"
+#include <AdaptorMQTT.h>
 #include "util/MetricTypes.h"
 #include "util/UnityTypes.h"
-
-JSONMessage JSONmessage;
-
-
-MetricTypes MT;
-UnityTypes UT;
-
 
 // Editables
 int MQTT_PORT = 1883;
 const char* MQTT_SERVER = "201.244.138.88";
 String testerName = "Kevin";
 String location = "Molinos";
-const char* SSID = "No robes we";
-const char* password = "@override";
+const char* SSID = "FAMILIA GUSMAN";
+const char* password = "10218715F";
 const int baudRate = 115200;
 
 // No editables
-String clientId = "ESP32Client-" +  testerName + "-estacion " + location;
+String clientId = "ESP32Client-" +  testerName + "-estacion" + location;
+
+AdaptorMQTT MQTT(MQTT_SERVER, MQTT_PORT, clientId);
+JSONMessage JSONmessage;
+MetricTypes MT;
+UnityTypes UT;
+
 
 void setup(){
   Serial.begin(baudRate);
@@ -37,25 +36,25 @@ void setup(){
   node["pid"] = 12;
   JSONmessage.init(node);
 
-  // WiFi.begin(SSID, password);
-  // while (WiFi.status() != WL_CONNECTED){
-  //   delay(400);
-  //   Serial.print(".");
-  // }
+  WiFi.begin(SSID, password);
+  while (WiFi.status() != WL_CONNECTED){
+    delay(400);
+    Serial.print(".");
+  }
 
   if(WiFi.status() == WL_CONNECTED){
-    setupMqtt(MQTT_SERVER, MQTT_PORT, clientId);
+    MQTT.connect();
   }
-  
-  JSONmessage.setMetric(MT.temperatura, 1, UT.tepertatura.centigrados);
-  JSONmessage.setMetric(MT.humedad, 30, "9" + UT.humedad.porciento);
-  JSONmessage.setMetric(MT.velocidad, 90, UT.velocidad.ms);
 }
 
 void loop(){
-  // mqttLoop();
+  MQTT.loop();
   delay(5000);
+  JSONmessage.setMetric(MT.temperatura, 1, UT.tepertatura.centigrados);
+  JSONmessage.setMetric(MT.humedad, 30, "9" + UT.humedad.porciento);
+  JSONmessage.setMetric(MT.velocidad, 90, UT.velocidad.ms);
   // sendMessage("node/message", getMessage());
   Serial.println("Mensaje->");
   Serial.println(JSONmessage.get());
+  // MQTT.send("node/message", JSONmessage.get());
 }
