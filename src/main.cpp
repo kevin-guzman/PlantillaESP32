@@ -3,10 +3,11 @@
 #include <AdaptorMQTT.h>
 #include "util/MetricTypes.h"
 #include "util/UnityTypes.h"
+#include "util/ParseFunctions.h"
 
 // Editables
 int MQTT_PORT = 1883;
-const char* MQTT_SERVER = "201.244.138.88";
+const char* MQTT_SERVER = "192.168.0.17";
 String testerName = "Kevin";
 String location = "Molinos";
 const char* SSID = "FAMILIA GUSMAN";
@@ -21,12 +22,22 @@ JSONMessage JSONmessage;
 MetricTypes MT;
 UnityTypes UT;
 
+void onTopicMessage(char* _topic, byte* _payload, unsigned int length){
+  String payload = byteToString(_payload, length);
+  String topic = String(_topic);
+  Serial.println(topic);
+  Serial.println(payload);
+}
+
 
 void setup(){
   Serial.begin(baudRate);
+  delay(200);
   Serial.println("");
   Serial.println("Proyect has started");
   Serial.println("Connecting to WiFi");
+
+  MQTT.setTopics("node/connected,topico,p");
 
   JSONVar node;
   node["uuid"] = "uuid-"+testerName;
@@ -43,18 +54,18 @@ void setup(){
   }
 
   if(WiFi.status() == WL_CONNECTED){
-    MQTT.connect();
+    MQTT.connect(onTopicMessage);
   }
 }
 
 void loop(){
   MQTT.loop();
-  delay(5000);
-  JSONmessage.setMetric(MT.temperatura, 1, UT.tepertatura.centigrados);
-  JSONmessage.setMetric(MT.humedad, 30, "9" + UT.humedad.porciento);
-  JSONmessage.setMetric(MT.velocidad, 90, UT.velocidad.ms);
-  // sendMessage("node/message", getMessage());
-  Serial.println("Mensaje->");
-  Serial.println(JSONmessage.get());
+  // delay(5000);
+  // JSONmessage.setMetric(MT.temperatura, 1, UT.tepertatura.centigrados);
+  // JSONmessage.setMetric(MT.humedad, 30, "9" + UT.humedad.porciento);
+  // JSONmessage.setMetric(MT.velocidad, 90, UT.velocidad.ms);
+
+  // Serial.println("Mensaje->");
+  // Serial.println(JSONmessage.get());
   // MQTT.send("node/message", JSONmessage.get());
 }
